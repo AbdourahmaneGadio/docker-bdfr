@@ -27,6 +27,7 @@
 # 11/22/2022 - CHG: allow for single-run.  if wait time <=0 don't loop
 #            - NEW: add ability to delay for random or specific time before proceeding
 
+# 03/24/2025 - Add the option to select the type of download we want
 
 #Debug
 [[ $DEBUG ]] && set -x
@@ -48,7 +49,7 @@ BDFR_DETOX="${BDFR_DETOX:-false}"			# True/False - whether to run detox to clean
 BDFR_RDFIND="${BDFR_RDFIND:-false}"			# True/False - whether to run rdfind to replace duplicate files
 BDFR_RDFIND_OPTS="${BDFR_RDFIND_OPTS:-}"	# Use these options when running rdfind. Default action: convert duplicates to symlinks
 BDFR_SYMLINKS="${BDFR_SYMLINKS:-false}"		# True/False - whether to run symlinks to change absolute/messy links to relative
-
+BDFR_DOWNLOAD_MODE="${BDFR_DOWNLOAD_MODE:-0}"			# 0: download, 1: archive, 2: clone
 
 function log() {
   local time=$(date +"%F %T")
@@ -119,7 +120,17 @@ fi
 
 # Run BDFR
 log "Running BDFR"
-python -m bdfr download /downloads $_OPTS
+
+# Download type
+if [ "${BDFR_DOWNLOAD_MODE}" -eq 0 ]; then
+  DOWNLOAD_TYPE=download
+elif [ "${BDFR_DOWNLOAD_MODE}" -eq 1 ]; then
+  DOWNLOAD_TYPE=archive
+else
+  DOWNLOAD_TYPE=clone
+fi
+
+python -m bdfr $DOWNLOAD_TYPE /downloads $_OPTS
 log "BDFR run complete"
 
 # Run detox

@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye
+FROM python:3.12-bullseye
 MAINTAINER overbyrn
 
 ARG S6_VER="3.1.2.1"
@@ -11,7 +11,14 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
 RUN DEBIAN_FRONTEND=noninteractive apt update && \
      apt install -y tar git htop iftop vim tzdata rdfind symlinks detox
 
-RUN pip3 install git+https://github.com/aliparlakci/bulk-downloader-for-reddit.git@development
+WORKDIR /fork
+
+RUN git clone https://github.com/thomas694/bulk-downloader-for-reddit_with-saved-hashes.git /fork
+
+RUN pip install .
+RUN pip install praw==7.7.1
+
+RUN apt-get update -y && apt-get install ffmpeg -y
 
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_VER}/s6-overlay-noarch.tar.xz /tmp
 RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz

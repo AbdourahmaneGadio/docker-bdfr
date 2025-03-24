@@ -3,6 +3,7 @@
 Docker version of [bulk downloader for reddit](https://github.com/aliparlakci/bulk-downloader-for-reddit). Currently tracking the development branch.
 
 ## Features
+ - Use a fork version of BDFR, which add more options : [thomas694's BDFR fork](https://github.com/thomas694/bulk-downloader-for-reddit_with-saved-hashes)
  - Configurable: runs python3 -m bdfr download using the `--opts` option to allow for configuring bdfr via a yaml file or command line args.
  - Only on the development branch as of now. See [Options](https://github.com/aliparlakci/bulk-downloader-for-reddit/tree/development#options) and [their example yaml](https://github.com/aliparlakci/bulk-downloader-for-reddit/blob/development/opts_example.yaml).
  - Optional post-download actions to sanitize filenames, remove or convert duplicates to symlinks.
@@ -25,15 +26,16 @@ Docker version of [bulk downloader for reddit](https://github.com/aliparlakci/bu
 | BDFR_RDFIND      | Whether to run rdfind to replace duplicate files [true/false]                                      |  false  |
 | BDFR_RDFIND_OPTS | Use these options when running rdfind. Default action if empty: convert duplicates to symlinks     |         |
 | BDFR_SYMLINKS    | Whether to run symlinks to change absolute/messy links to relative [true/false]                    |  false  |
+| BDFR_DOWNLOAD_MODE    | Change the way BDFR download the posts [0: download, 1: archive, 2: clone]                    |  0  |
 
 
-## Setup
+## Setup with Docker run
 
-1. rename `options.yaml.example` -> `options.yaml`
-1. rename `default_config.cfg` -> `config.cfg`
-2. modify and put in a directory (ideally a persistent mounted volume)
-3. choose a download directory (ideally a persistent mounted volume)
-4. run docker container:
+1. Rename `options.yaml.example` -> `options.yaml`
+1. Rename `default_config.cfg` -> `config.cfg`
+2. Modify and put in a directory (ideally a persistent mounted volume)
+3. Choose a download directory (ideally a persistent mounted volume)
+4. Run docker container:
 ```
 docker run -d \  
 -v /your/config/location:/config \  
@@ -49,7 +51,38 @@ docker run -d \
 -e BDFR_DETOX=false \
 -e BDFR_RDFIND=false \
 -e BDFR_SYMLINKS=false \
+-e BDFR_DOWNLOAD_MODE=0 \
 --name bdfr \
 overbyrn/docker-bdfr
+```
+
+## Setup with Docker Compose
+```
+services:
+  bdfr:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: bdfr
+    volumes:
+      - /your/config/location:/config/config.cfg
+      - /your/download/location:/downloads 
+      - /your/option/location/:/config/options.yaml 
+    ports: 
+      - 7634:7634
+    environment:
+      PUID: 1000 # Should be the owner of volumes
+      PGID: 1000 # Should be the owner of volumes
+      BDFR_POSTLIMIT: 9999 
+      BDFR_OFFSET: -1 
+      BDFR_WAIT: 300
+      BDFR_AUTH: false
+      BDFR_VERBOSE: 0 
+      BDFR_NODUPES: true
+      BDFR_SORT: new
+      BDFR_DETOX: false 
+      BDFR_RDFIND: false
+      BDFR_SYMLINKS: false 
+      BDFR_DOWNLOAD_MODE: 0
 ```
 
